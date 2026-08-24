@@ -4,37 +4,21 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from generated import resource_pb2
 from generated import resource_pb2_grpc
+
 from messaging.broker import MessageBroker
 from messaging.consumer import MessageConsumer
-from registry.node_registry import NodeRegistry
+from registry.client import RegistryClient
+
+
+REGISTRY_ADDRESS = "localhost:50054"
 
 
 broker = MessageBroker()
 consumer = MessageConsumer(broker)
-registry = NodeRegistry()
+registry_client = RegistryClient(REGISTRY_ADDRESS)
 
 
-# Register resource nodes with the registry
-registry.register_node(
-    "NODE-CSE-001",
-    "CSE",
-    "localhost:50051"
-)
-
-registry.register_node(
-    "NODE-LIBRARY-001",
-    "LIBRARY",
-    "localhost:50052"
-)
-
-registry.register_node(
-    "NODE-COMMUNITY-001",
-    "COMMUNITY",
-    "localhost:50053"
-)
-
-
-def search_node(node_name, address, query):
+def search_node(node_id, node_type, address, query):
     """
     Send a search request to one resource node.
 
@@ -42,10 +26,13 @@ def search_node(node_name, address, query):
         (True, resources)  -> node responded successfully
         (False, [])        -> node is unavailable
     """
-    try:
-        channel = grpc.insecure_channel(address)
 
-        stub = resource_pb2_grpc.ResourceServiceStub(channel)
+    channel = grpc.insecure_channel(address)
+
+    try:
+        stub = resource_pb2_grpc.ResourceServiceStub(
+            channel
+        )
 
         response = stub.SearchResources(
             resource_pb2.SearchRequest(
@@ -57,25 +44,78 @@ def search_node(node_name, address, query):
         return True, list(response.resources)
 
     except grpc.RpcError as error:
+
         print(
-            f"[Gateway] {node_name} unavailable: "
+            f"[Gateway] {node_id} unavailable: "
             f"{error.code()}"
         )
 
         return False, []
 
+    finally:
+        channel.close()
+
+
+def discover_nodes():
+    """
+    Discover currently registered resource nodes
+    through the gRPC Node Registry.
+    """
+
+    try:
+        nodes = registry_client.get_nodes()
+
+        discovered_nodes = {}
+
+        for node in nodes:
+
+            # Ignore invalid or incomplete registry entries
+            if not node.node_id or not node.address:
+                continue
+
+            discovered_nodes[node.node_id] = {
+                "node_type": node.node_type,
+                "address": node.address
+            }
+
+        return discovered_nodes
+
+    except grpc.RpcError as error:
+
+        print(
+            f"[Gateway] Registry unavailable: "
+            f"{error.code()}"
+        )
+
+        return {}
+
 
 def search_all_nodes(query):
     """
-    Search all registered resource nodes concurrently.
+    Discover registered resource nodes and search
+    all of them concurrently.
     """
 
     all_resources = []
 
-    # Discover nodes from the registry
-    discovered_nodes = registry.get_all_nodes()
+    # Discover nodes dynamically from Registry
+    discovered_nodes = discover_nodes()
 
-    # Publish search request through message-oriented communication
+    if not discovered_nodes:
+
+        print(
+            "[Gateway] No registered resource nodes found."
+        )
+
+        return all_resources
+
+    print(
+        f"[Gateway] Discovered "
+        f"{len(discovered_nodes)} registered node(s)."
+    )
+
+    # Publish search request through message-oriented
+    # communication
     broker.publish({
         "type": "SEARCH_REQUEST",
         "query": query,
@@ -94,10 +134,12 @@ def search_all_nodes(query):
             executor.submit(
                 search_node,
                 node_id,
+                node_info["node_type"],
                 node_info["address"],
                 query
             ): node_id
-            for node_id, node_info in discovered_nodes.items()
+            for node_id, node_info
+            in discovered_nodes.items()
         }
 
         for future in as_completed(future_to_node):
@@ -108,6 +150,7 @@ def search_all_nodes(query):
                 success, resources = future.result()
 
                 if success:
+
                     print(
                         f"[Gateway] {node_id} returned "
                         f"{len(resources)} resource(s)."
@@ -116,6 +159,7 @@ def search_all_nodes(query):
                     all_resources.extend(resources)
 
             except Exception as error:
+
                 print(
                     f"[Gateway] Unexpected error while "
                     f"contacting {node_id}: {error}"
@@ -130,34 +174,74 @@ def main():
     print(" Distributed Educational Resource Gateway")
     print("========================================")
 
-    query = input("\nEnter search query: ").strip()
+    try:
 
-    if not query:
-        print("Please enter a search query.")
-        return
+        query = input(
+            "\nEnter search query: "
+        ).strip()
 
-    print(f"\nSearching for: {query}")
-    print("-" * 50)
+        if not query:
 
-    resources = search_all_nodes(query)
+            print(
+                "Please enter a search query."
+            )
 
-    print("\nSearch Results")
-    print("=" * 50)
+            return
 
-    if not resources:
-        print("No resources found.")
-        return
-
-    for resource in resources:
-
-        print(f"Resource ID : {resource.resource_id}")
-        print(f"Title       : {resource.title}")
-        print(f"Subject     : {resource.subject}")
-        print(f"Type        : {resource.resource_type}")
-        print(f"Author      : {resource.author}")
-        print(f"Node        : {resource.node_id}")
+        print(
+            f"\nSearching for: {query}"
+        )
 
         print("-" * 50)
+
+        resources = search_all_nodes(query)
+
+        print("\nSearch Results")
+        print("=" * 50)
+
+        if not resources:
+
+            print("No resources found.")
+
+            return
+
+        for resource in resources:
+
+            print(
+                f"Resource ID : "
+                f"{resource.resource_id}"
+            )
+
+            print(
+                f"Title       : "
+                f"{resource.title}"
+            )
+
+            print(
+                f"Subject     : "
+                f"{resource.subject}"
+            )
+
+            print(
+                f"Type        : "
+                f"{resource.resource_type}"
+            )
+
+            print(
+                f"Author      : "
+                f"{resource.author}"
+            )
+
+            print(
+                f"Node        : "
+                f"{resource.node_id}"
+            )
+
+            print("-" * 50)
+
+    finally:
+
+        registry_client.close()
 
 
 if __name__ == "__main__":
