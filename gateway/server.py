@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from generated import resource_pb2
 from generated import resource_pb2_grpc
+from messaging.broker import MessageBroker
 
 
 NODES = {
@@ -11,6 +12,8 @@ NODES = {
     "Library": "localhost:50052",
     "Community": "localhost:50053"
 }
+
+broker = MessageBroker()
 
 
 def search_node(node_name, address, query):
@@ -50,6 +53,12 @@ def search_all_nodes(query):
     """
 
     all_resources = []
+
+    broker.publish({
+        "type": "SEARCH_REQUEST",
+        "query": query,
+        "sender": "GATEWAY"
+    })
 
     with ThreadPoolExecutor(
         max_workers=len(NODES)

@@ -1,8 +1,10 @@
 from messaging.broker import MessageBroker
+from messaging.consumer import MessageConsumer
 
 
 def main():
     broker = MessageBroker()
+    consumer = MessageConsumer(broker)
 
     print("========================================")
     print(" Message-Oriented Communication Test")
@@ -23,12 +25,11 @@ def main():
 
     print(f"\nPending messages: {broker.pending_messages()}")
 
-    # Consumer retrieves messages
-    print("\nConsuming messages...")
+    # Consumer processes messages
+    print("\nProcessing messages...")
 
     while broker.pending_messages() > 0:
-        message = broker.consume()
-        print(f"Consumer received: {message}")
+        consumer.process_next_message()
 
     print("\nAll messages processed.")
 
