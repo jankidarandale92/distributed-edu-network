@@ -21,16 +21,18 @@ class MessageConsumer:
             print("[Consumer] No messages available.")
             return None
 
+        message_type = message.get("type")
+        query = message.get("query")
+        sender = message.get("sender")
+
         print(
-            f"[Consumer] Processing message: {message}"
+            f"[Consumer] Processing message: "
+            f"type={message_type}, "
+            f"query='{query}', "
+            f"sender={sender}"
         )
 
-        message_type = message.get("type")
-
         if message_type == "SEARCH_REQUEST":
-
-            query = message.get("query")
-            sender = message.get("sender")
 
             print(
                 f"[Consumer] Search request received "
@@ -38,10 +40,10 @@ class MessageConsumer:
             )
 
         else:
+
             print(
                 f"[Consumer] Unknown message type: "
                 f"{message_type}"
             )
 
         return message
-    
