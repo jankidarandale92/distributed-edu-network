@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from generated import resource_pb2
 from generated import resource_pb2_grpc
 from messaging.broker import MessageBroker
+from messaging.consumer import MessageConsumer
 
 
 NODES = {
@@ -14,6 +15,7 @@ NODES = {
 }
 
 broker = MessageBroker()
+consumer = MessageConsumer(broker)
 
 
 def search_node(node_name, address, query):
@@ -59,6 +61,8 @@ def search_all_nodes(query):
         "query": query,
         "sender": "GATEWAY"
     })
+
+    consumer.process_next_message()
 
     with ThreadPoolExecutor(
         max_workers=len(NODES)
