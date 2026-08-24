@@ -6,16 +6,32 @@ from generated import resource_pb2
 from generated import resource_pb2_grpc
 from messaging.broker import MessageBroker
 from messaging.consumer import MessageConsumer
+from registry.node_registry import NodeRegistry
 
-
-NODES = {
-    "CSE": "localhost:50051",
-    "Library": "localhost:50052",
-    "Community": "localhost:50053"
-}
 
 broker = MessageBroker()
 consumer = MessageConsumer(broker)
+registry = NodeRegistry()
+
+
+# Register resource nodes with the registry
+registry.register_node(
+    "NODE-CSE-001",
+    "CSE",
+    "localhost:50051"
+)
+
+registry.register_node(
+    "NODE-LIBRARY-001",
+    "LIBRARY",
+    "localhost:50052"
+)
+
+registry.register_node(
+    "NODE-COMMUNITY-001",
+    "COMMUNITY",
+    "localhost:50053"
+)
 
 
 def search_node(node_name, address, query):
@@ -51,43 +67,49 @@ def search_node(node_name, address, query):
 
 def search_all_nodes(query):
     """
-    Search all available resource nodes concurrently.
+    Search all registered resource nodes concurrently.
     """
 
     all_resources = []
 
+    # Discover nodes from the registry
+    discovered_nodes = registry.get_all_nodes()
+
+    # Publish search request through message-oriented communication
     broker.publish({
         "type": "SEARCH_REQUEST",
         "query": query,
         "sender": "GATEWAY"
     })
 
+    # Process the published message
     consumer.process_next_message()
 
+    # Search all discovered nodes concurrently
     with ThreadPoolExecutor(
-        max_workers=len(NODES)
+        max_workers=len(discovered_nodes)
     ) as executor:
 
         future_to_node = {
             executor.submit(
                 search_node,
-                node_name,
-                address,
+                node_id,
+                node_info["address"],
                 query
-            ): node_name
-            for node_name, address in NODES.items()
+            ): node_id
+            for node_id, node_info in discovered_nodes.items()
         }
 
         for future in as_completed(future_to_node):
 
-            node_name = future_to_node[future]
+            node_id = future_to_node[future]
 
             try:
                 success, resources = future.result()
 
                 if success:
                     print(
-                        f"[Gateway] {node_name} returned "
+                        f"[Gateway] {node_id} returned "
                         f"{len(resources)} resource(s)."
                     )
 
@@ -96,7 +118,7 @@ def search_all_nodes(query):
             except Exception as error:
                 print(
                     f"[Gateway] Unexpected error while "
-                    f"contacting {node_name}: {error}"
+                    f"contacting {node_id}: {error}"
                 )
 
     return all_resources
