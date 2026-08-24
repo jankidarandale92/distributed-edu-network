@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package resource;
+
+service ResourceService {
+
+    rpc SearchResources (SearchRequest) returns (SearchResponse);
+
+    rpc GetResource (ResourceRequest) returns (ResourceResponse);
+
+    rpc AddResource (AddResourceRequest) returns (AddResourceResponse);
+
+    rpc HealthCheck (HealthRequest) returns (HealthResponse);
+}
+
+message SearchRequest {
+    string query = 1;
+}
+
+message SearchResponse {
+    repeated Resource resources = 1;
+}
+
+message ResourceRequest {
+    string resource_id = 1;
+}
+
+message ResourceResponse {
+    Resource resource = 1;
+    bool found = 2;
+}
+
+message AddResourceRequest {
+    string title = 1;
+    string subject = 2;
+    string description = 3;
+    string resource_type = 4;
+    string author = 5;
+}
+
+message AddResourceResponse {
+    bool success = 1;
+    string message = 2;
+    string resource_id = 3;
+}
+
+message HealthRequest {
+}
+
+message HealthResponse {
+    string node_id = 1;
+    bool healthy = 2;
+}
+
+message Resource {
+    string resource_id = 1;
+    string title = 2;
+    string subject = 3;
+    string description = 4;
+    string resource_type = 5;
+    string author = 6;
+    string node_id = 7;
+}
