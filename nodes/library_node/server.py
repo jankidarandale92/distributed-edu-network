@@ -5,6 +5,7 @@ import grpc
 from generated import resource_pb2
 from generated import resource_pb2_grpc
 from registry.client import RegistryClient
+from messaging.logical_clock import LamportClock
 
 
 NODE_ID = "NODE-LIBRARY-001"
@@ -18,6 +19,10 @@ class ResourceService(
 ):
 
     def __init__(self):
+
+        # Lamport logical clock for this resource node
+        self.lamport_clock = LamportClock()
+
         self.resources = [
             resource_pb2.Resource(
                 resource_id="LIB-RES-001",
@@ -60,6 +65,27 @@ class ResourceService(
         ]
 
     def SearchResources(self, request, context):
+
+        # Receive and update Lamport timestamp
+        self.lamport_clock.update(
+            request.lamport_timestamp
+        )
+
+        print(
+            f"[Lamport] {NODE_ID} received request "
+            f"with timestamp "
+            f"{request.lamport_timestamp}"
+        )
+
+        # Increment clock before sending response
+        response_timestamp = self.lamport_clock.tick()
+
+        print(
+            f"[Lamport] {NODE_ID} sending response "
+            f"with timestamp "
+            f"{response_timestamp}"
+        )
+
         query = request.query.lower()
 
         matching_resources = [
@@ -73,23 +99,54 @@ class ResourceService(
         ]
 
         return resource_pb2.SearchResponse(
-            resources=matching_resources
+            resources=matching_resources,
+            lamport_timestamp=response_timestamp
         )
 
     def GetResource(self, request, context):
+
+        # Receive and update Lamport timestamp
+        self.lamport_clock.update(
+            request.lamport_timestamp
+        )
+
+        response_timestamp = self.lamport_clock.tick()
+
+        print(
+            f"[Lamport] {NODE_ID} processed GetResource "
+            f"with timestamp "
+            f"{response_timestamp}"
+        )
+
         for resource in self.resources:
 
             if resource.resource_id == request.resource_id:
+
                 return resource_pb2.ResourceResponse(
                     resource=resource,
-                    found=True
+                    found=True,
+                    lamport_timestamp=response_timestamp
                 )
 
         return resource_pb2.ResourceResponse(
-            found=False
+            found=False,
+            lamport_timestamp=response_timestamp
         )
 
     def AddResource(self, request, context):
+
+        # Receive and update Lamport timestamp
+        self.lamport_clock.update(
+            request.lamport_timestamp
+        )
+
+        response_timestamp = self.lamport_clock.tick()
+
+        print(
+            f"[Lamport] {NODE_ID} processed AddResource "
+            f"with timestamp "
+            f"{response_timestamp}"
+        )
 
         resource_id = (
             f"LIB-RES-{len(self.resources) + 1:03d}"
@@ -110,13 +167,28 @@ class ResourceService(
         return resource_pb2.AddResourceResponse(
             success=True,
             message="Resource added successfully.",
-            resource_id=resource_id
+            resource_id=resource_id,
+            lamport_timestamp=response_timestamp
         )
 
     def HealthCheck(self, request, context):
+
+        # Receive and update Lamport timestamp
+        self.lamport_clock.update(
+            request.lamport_timestamp
+        )
+
+        response_timestamp = self.lamport_clock.tick()
+
+        print(
+            f"[Lamport] {NODE_ID} HealthCheck timestamp "
+            f"{response_timestamp}"
+        )
+
         return resource_pb2.HealthResponse(
             node_id=NODE_ID,
-            healthy=True
+            healthy=True,
+            lamport_timestamp=response_timestamp
         )
 
 
@@ -130,6 +202,7 @@ def serve():
     server = None
 
     try:
+
         # Register this node with the Registry
         response = registry.register_node(
             NODE_ID,
@@ -170,6 +243,7 @@ def serve():
         print(
             f"{NODE_ID} is running on port {PORT}"
         )
+
         print(
             "Waiting for gRPC requests..."
         )

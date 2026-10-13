@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eresource.proto\x12\x08resource\"\x1e\n\rSearchRequest\x12\r\n\x05query\x18\x01 \x01(\t\"7\n\x0eSearchResponse\x12%\n\tresources\x18\x01 \x03(\x0b\x32\x12.resource.Resource\"&\n\x0fResourceRequest\x12\x13\n\x0bresource_id\x18\x01 \x01(\t\"G\n\x10ResourceResponse\x12$\n\x08resource\x18\x01 \x01(\x0b\x32\x12.resource.Resource\x12\r\n\x05\x66ound\x18\x02 \x01(\x08\"p\n\x12\x41\x64\x64ResourceRequest\x12\r\n\x05title\x18\x01 \x01(\t\x12\x0f\n\x07subject\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x15\n\rresource_type\x18\x04 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x05 \x01(\t\"L\n\x13\x41\x64\x64ResourceResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x13\n\x0bresource_id\x18\x03 \x01(\t\"\x0f\n\rHealthRequest\"2\n\x0eHealthResponse\x12\x0f\n\x07node_id\x18\x01 \x01(\t\x12\x0f\n\x07healthy\x18\x02 \x01(\x08\"\x8c\x01\n\x08Resource\x12\x13\n\x0bresource_id\x18\x01 \x01(\t\x12\r\n\x05title\x18\x02 \x01(\t\x12\x0f\n\x07subject\x18\x03 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x15\n\rresource_type\x18\x05 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x06 \x01(\t\x12\x0f\n\x07node_id\x18\x07 \x01(\t2\xab\x02\n\x0fResourceService\x12\x44\n\x0fSearchResources\x12\x17.resource.SearchRequest\x1a\x18.resource.SearchResponse\x12\x44\n\x0bGetResource\x12\x19.resource.ResourceRequest\x1a\x1a.resource.ResourceResponse\x12J\n\x0b\x41\x64\x64Resource\x12\x1c.resource.AddResourceRequest\x1a\x1d.resource.AddResourceResponse\x12@\n\x0bHealthCheck\x12\x17.resource.HealthRequest\x1a\x18.resource.HealthResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eresource.proto\x12\x08resource\"9\n\rSearchRequest\x12\r\n\x05query\x18\x01 \x01(\t\x12\x19\n\x11lamport_timestamp\x18\x02 \x01(\x03\"R\n\x0eSearchResponse\x12%\n\tresources\x18\x01 \x03(\x0b\x32\x12.resource.Resource\x12\x19\n\x11lamport_timestamp\x18\x02 \x01(\x03\"A\n\x0fResourceRequest\x12\x13\n\x0bresource_id\x18\x01 \x01(\t\x12\x19\n\x11lamport_timestamp\x18\x02 \x01(\x03\"b\n\x10ResourceResponse\x12$\n\x08resource\x18\x01 \x01(\x0b\x32\x12.resource.Resource\x12\r\n\x05\x66ound\x18\x02 \x01(\x08\x12\x19\n\x11lamport_timestamp\x18\x03 \x01(\x03\"\x8b\x01\n\x12\x41\x64\x64ResourceRequest\x12\r\n\x05title\x18\x01 \x01(\t\x12\x0f\n\x07subject\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x15\n\rresource_type\x18\x04 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x05 \x01(\t\x12\x19\n\x11lamport_timestamp\x18\x06 \x01(\x03\"g\n\x13\x41\x64\x64ResourceResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x13\n\x0bresource_id\x18\x03 \x01(\t\x12\x19\n\x11lamport_timestamp\x18\x04 \x01(\x03\"*\n\rHealthRequest\x12\x19\n\x11lamport_timestamp\x18\x01 \x01(\x03\"M\n\x0eHealthResponse\x12\x0f\n\x07node_id\x18\x01 \x01(\t\x12\x0f\n\x07healthy\x18\x02 \x01(\x08\x12\x19\n\x11lamport_timestamp\x18\x03 \x01(\x03\"\x8c\x01\n\x08Resource\x12\x13\n\x0bresource_id\x18\x01 \x01(\t\x12\r\n\x05title\x18\x02 \x01(\t\x12\x0f\n\x07subject\x18\x03 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x15\n\rresource_type\x18\x05 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x06 \x01(\t\x12\x0f\n\x07node_id\x18\x07 \x01(\t2\xab\x02\n\x0fResourceService\x12\x44\n\x0fSearchResources\x12\x17.resource.SearchRequest\x1a\x18.resource.SearchResponse\x12\x44\n\x0bGetResource\x12\x19.resource.ResourceRequest\x1a\x1a.resource.ResourceResponse\x12J\n\x0b\x41\x64\x64Resource\x12\x1c.resource.AddResourceRequest\x1a\x1d.resource.AddResourceResponse\x12@\n\x0bHealthCheck\x12\x17.resource.HealthRequest\x1a\x18.resource.HealthResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,23 +32,23 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'resource_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_SEARCHREQUEST']._serialized_start=28
-  _globals['_SEARCHREQUEST']._serialized_end=58
-  _globals['_SEARCHRESPONSE']._serialized_start=60
-  _globals['_SEARCHRESPONSE']._serialized_end=115
-  _globals['_RESOURCEREQUEST']._serialized_start=117
-  _globals['_RESOURCEREQUEST']._serialized_end=155
-  _globals['_RESOURCERESPONSE']._serialized_start=157
-  _globals['_RESOURCERESPONSE']._serialized_end=228
-  _globals['_ADDRESOURCEREQUEST']._serialized_start=230
-  _globals['_ADDRESOURCEREQUEST']._serialized_end=342
-  _globals['_ADDRESOURCERESPONSE']._serialized_start=344
-  _globals['_ADDRESOURCERESPONSE']._serialized_end=420
-  _globals['_HEALTHREQUEST']._serialized_start=422
-  _globals['_HEALTHREQUEST']._serialized_end=437
-  _globals['_HEALTHRESPONSE']._serialized_start=439
-  _globals['_HEALTHRESPONSE']._serialized_end=489
-  _globals['_RESOURCE']._serialized_start=492
-  _globals['_RESOURCE']._serialized_end=632
-  _globals['_RESOURCESERVICE']._serialized_start=635
-  _globals['_RESOURCESERVICE']._serialized_end=934
+  _globals['_SEARCHREQUEST']._serialized_end=85
+  _globals['_SEARCHRESPONSE']._serialized_start=87
+  _globals['_SEARCHRESPONSE']._serialized_end=169
+  _globals['_RESOURCEREQUEST']._serialized_start=171
+  _globals['_RESOURCEREQUEST']._serialized_end=236
+  _globals['_RESOURCERESPONSE']._serialized_start=238
+  _globals['_RESOURCERESPONSE']._serialized_end=336
+  _globals['_ADDRESOURCEREQUEST']._serialized_start=339
+  _globals['_ADDRESOURCEREQUEST']._serialized_end=478
+  _globals['_ADDRESOURCERESPONSE']._serialized_start=480
+  _globals['_ADDRESOURCERESPONSE']._serialized_end=583
+  _globals['_HEALTHREQUEST']._serialized_start=585
+  _globals['_HEALTHREQUEST']._serialized_end=627
+  _globals['_HEALTHRESPONSE']._serialized_start=629
+  _globals['_HEALTHRESPONSE']._serialized_end=706
+  _globals['_RESOURCE']._serialized_start=709
+  _globals['_RESOURCE']._serialized_end=849
+  _globals['_RESOURCESERVICE']._serialized_start=852
+  _globals['_RESOURCESERVICE']._serialized_end=1151
 # @@protoc_insertion_point(module_scope)

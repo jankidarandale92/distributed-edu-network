@@ -13,22 +13,29 @@ service ResourceService {
     rpc HealthCheck (HealthRequest) returns (HealthResponse);
 }
 
+
 message SearchRequest {
     string query = 1;
+    int64 lamport_timestamp = 2;
 }
 
 message SearchResponse {
     repeated Resource resources = 1;
+    int64 lamport_timestamp = 2;
 }
+
 
 message ResourceRequest {
     string resource_id = 1;
+    int64 lamport_timestamp = 2;
 }
 
 message ResourceResponse {
     Resource resource = 1;
     bool found = 2;
+    int64 lamport_timestamp = 3;
 }
+
 
 message AddResourceRequest {
     string title = 1;
@@ -36,21 +43,27 @@ message AddResourceRequest {
     string description = 3;
     string resource_type = 4;
     string author = 5;
+    int64 lamport_timestamp = 6;
 }
 
 message AddResourceResponse {
     bool success = 1;
     string message = 2;
     string resource_id = 3;
+    int64 lamport_timestamp = 4;
 }
 
+
 message HealthRequest {
+    int64 lamport_timestamp = 1;
 }
 
 message HealthResponse {
     string node_id = 1;
     bool healthy = 2;
+    int64 lamport_timestamp = 3;
 }
+
 
 message Resource {
     string resource_id = 1;

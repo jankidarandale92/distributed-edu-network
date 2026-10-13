@@ -8,6 +8,7 @@ from generated import resource_pb2_grpc
 from messaging.broker import MessageBroker
 from messaging.consumer import MessageConsumer
 from registry.client import RegistryClient
+from messaging.logical_clock import LamportClock
 
 
 REGISTRY_ADDRESS = "localhost:50054"
@@ -16,6 +17,9 @@ REGISTRY_ADDRESS = "localhost:50054"
 broker = MessageBroker()
 consumer = MessageConsumer(broker)
 registry_client = RegistryClient(REGISTRY_ADDRESS)
+
+# Lamport logical clock for the Gateway
+lamport_clock = LamportClock()
 
 
 def search_node(node_id, node_type, address, query):
@@ -27,16 +31,37 @@ def search_node(node_id, node_type, address, query):
         (False, [])        -> node is unavailable
     """
 
+    # Increment Gateway Lamport clock before sending request
+    timestamp = lamport_clock.tick()
+
+    print(
+        f"[Lamport] Gateway sending request to "
+        f"{node_id} with timestamp {timestamp}"
+    )
+
     channel = grpc.insecure_channel(address)
 
     try:
+
         stub = resource_pb2_grpc.ResourceServiceStub(channel)
 
         response = stub.SearchResources(
             resource_pb2.SearchRequest(
-                query=query
+                query=query,
+                lamport_timestamp=timestamp
             ),
             timeout=3
+        )
+
+        # Update Gateway clock using timestamp received
+        lamport_clock.update(
+            response.lamport_timestamp
+        )
+
+        print(
+            f"[Lamport] Gateway received response from "
+            f"{node_id} with timestamp "
+            f"{response.lamport_timestamp}"
         )
 
         return True, list(response.resources)
@@ -51,6 +76,7 @@ def search_node(node_id, node_type, address, query):
         return False, []
 
     finally:
+
         channel.close()
 
 
